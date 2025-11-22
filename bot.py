@@ -1,36 +1,43 @@
 import os
 import asyncio
-import google.generativeai as genai
+from groq import Groq
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+client = Groq(api_key=GROQ_API_KEY)
+
 async def start(update, context):
-    await update.message.reply_text("🤖 AssistMate AI Bot\n\nHello! Kuch bhi pucho!")
+    await update.message.reply_text("🤖 AssistMate AI Bot\n\nHello! Powered by Llama 3.3! Kuch bhi pucho!")
 
 async def handle_message(update, context):
     try:
         user_message = update.message.text
         await update.message.chat.send_action(action="typing")
-        response = model.generate_content(user_message)
-        await update.message.reply_text(response.text)
+        
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "user", "content": user_message}],
+            model="llama-3.3-70b-versatile",
+        )
+        
+        response_text = chat_completion.choices[0].message.content
+        await update.message.reply_text(response_text)
+            
     except Exception as e:
-        await update.message.reply_text(f"Error: {e}")
+        await update.message.reply_text(f"Error: {str(e)}")
+        print(f"Error: {e}")
 
 async def run_bot():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("✅ Bot running!")
-    
+    print("✅ Bot running with Groq AI!")
+    print("🚀 Powered by Llama 3.3 70B")
     async with app:
         await app.initialize()
         await app.start()
         await app.updater.start_polling()
-        
         try:
             while True:
                 await asyncio.sleep(1)
