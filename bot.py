@@ -6,7 +6,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
-client = Groq(api_key=GROQ_API_KEY)
+from groq import Client
+client = Client(api_key=GROQ_API_KEY)
 
 async def start(update, context):
     await update.message.reply_text("🤖 AssistMate AI Bot\n\nHello! Powered by Llama 3.3! Kuch bhi pucho!")
@@ -46,3 +47,4 @@ async def run_bot():
 
 if __name__ == '__main__':
     asyncio.run(run_bot())
+
